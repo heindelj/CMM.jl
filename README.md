@@ -48,13 +48,6 @@ The first time you do the previous command, the dependencies of the project will
 	- Notice that the energies object contains more than just the EDA terms described above as some of the terms have multiple contributions.
 	- Another nuance is that the `Polarization` energy reported in `ff.results.energies` is not the actual polarization energy. This is because, just like in EDA, the charge transfer and polarization energies are coupled. The calculation you just did occurred on the physical PES, which includes explicit charge transfer. To get the actual polarization energy, we need to compute the energy on the POL surface as follows.
 
-`> ff_pol = build_cmm_model()`
-
-`> evaluate!(geoms[1] / .529177, labels[1], [[i, i+1, i+2] for i in 1:3:length(labels[1])], ff_pol)`
-
-`> ff_pol.results.energies`
-
-
 `> ff_pol = build_cmm_model_POL()`
 
 `> evaluate!(geoms[1] / .529177, labels[1], [[i, i+1, i+2] for i in 1:3:length(labels[1])], ff_pol)`
