@@ -1,6 +1,8 @@
 module CMM
 
 export build_cmm_model
+export build_cmm_model_POL
+export build_cmm_model_FRZ
 export evaluate!
 export mbe
 export finite_difference_forces

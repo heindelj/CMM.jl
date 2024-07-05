@@ -95,3 +95,24 @@ function build_cmm_model(
     ff_results = ForceFieldResults()
     return CMM_FF(ff_terms, params, ff_storage, ff_results)
 end
+
+function build_cmm_model_POL()
+    return build_cmm_model(
+        false, true, false,
+        [
+            reset_storage!, get_one_body_properties!,
+            permanent_electrostatics!, short_range_energy!,
+            polarization_energy!
+        ]
+    )
+end
+
+function build_cmm_model_FRZ()
+    return build_cmm_model(
+        false, true, false,
+        [
+            reset_storage!, get_one_body_properties!,
+            permanent_electrostatics!, short_range_energy!
+        ]
+    )
+end
