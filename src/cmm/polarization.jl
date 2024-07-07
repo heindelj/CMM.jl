@@ -172,7 +172,6 @@ function polarization_energy!(coords::AbstractVector{MVector{3, Float64}}, label
             # from previous and current step.
             
         end
-
     end
 
     if ff.storage.include_exch_pol
