@@ -27,6 +27,7 @@ include("components/short_range.jl")
 include("components/exchange_polarization.jl")
 include("components/build_model.jl")
 include("components/utils.jl")
+include("components/switching_functions.jl")
 
 include("cmm/cmm_types.jl")
 include("cmm/cmm_builder.jl")

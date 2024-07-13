@@ -22,5 +22,4 @@ function TTTR_potential(
     λ6 = inc_gamma(x, 6)
 
     return A * exp(-x) - (λ1 * C1 / R + λ4 * C4 / R^4 + λ6 * C6 / R^6)
-
 end
