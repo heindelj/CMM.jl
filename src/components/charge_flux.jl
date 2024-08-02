@@ -74,7 +74,6 @@ function get_charges_with_charge_flux!(
                 @views charge_grads[i_frag][:, idx_O, idx_H2] = -(charge_grads[i_frag][:, idx_H1, idx_H2] + charge_grads[i_frag][:, idx_H2, idx_H2])
                 @views charge_grads[i_frag][:, idx_O, idx_O]  = -(charge_grads[i_frag][:, idx_H1, idx_O] + charge_grads[i_frag][:, idx_H2, idx_O])
             end
-
         elseif length(fragment_indices[i_frag]) != 1
             n = length(fragment_indices[i_frag])
             @warn "Got fragment with $n atoms. This is not water or an ion. Either the implementation needs to be updated or the provided input is wrong."
