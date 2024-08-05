@@ -126,9 +126,8 @@ function get_model_inverse_polarizabilities_with_ion_ion_damping!(
             #α_local += R_field * induced_anisotropy * R_field'
 
             α_free = params[Symbol(labels[i], :_α)]
-            q_ion = params[Symbol(labels[i], :_q)]
             λ_max = params[Symbol(labels[i], :_α_max_damp_factor)]
-            b_ϕ = params[Symbol(labels[i], :_α_damp_exponent)]
+            b_ϕ = abs(params[Symbol(labels[i], :_α_damp_exponent)])
             # NOTE: There may be a better way of dealing with the sign of
             # the potential? It might just be that we should multiply all
             # the parameters by q_ion * ϕ. Will have to play around to make
