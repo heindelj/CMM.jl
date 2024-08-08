@@ -75,6 +75,7 @@ function get_total_induced_dipole_moment(coords::Vector{MVector{3, Float64}}, la
 end
 
 function fluctuating_charge_molecular_polarizability(coords::Vector{MVector{3, Float64}}, labels::Vector{String}, fragment_indices::Vector{Vector{Int}}, ff::AbstractForceField, field_strength::Float64=1e-5)
+    initial_field_strength = copy(ff.storage.applied_field)
     α = zeros(3, 3)
     for w in 1:3
         μ_ind = zeros(3)
@@ -88,7 +89,7 @@ function fluctuating_charge_molecular_polarizability(coords::Vector{MVector{3, F
         evaluate!(coords, labels, fragment_indices, ff)
         μ_minus_w = get_total_induced_dipole_moment(coords, labels, ff.storage.induced_multipoles)
 
-        ff.storage.applied_field[w] = 0.0
+        ff.storage.applied_field[w] = initial_field_strength[w]
 
         # compute finite difference change in dipole for each direction
         dμ = (μ_plus_w - μ_minus_w) / (2 * field_strength)

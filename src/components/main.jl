@@ -1,3 +1,6 @@
+using Optim, Combinatorics, CSV, DataFrames, StatsBase, ProgressMeter, Printf, StaticArrays, CMM
+
+include("damping.jl")
 include("multipoles.jl")
 include("damped_multipoles.jl")
 include("force_field.jl")
@@ -6,8 +9,6 @@ include("utils.jl")
 include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/harmonic_frequencies.jl")
 include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/molecular_axes.jl")
 
-include("../tests/finite_difference_gradients.jl")
-using Optim, Combinatorics, CSV, DataFrames, StatsBase, ProgressMeter, Printf
 
 function mbe(
     coords::Vector{MVector{3,Float64}},
@@ -74,8 +75,8 @@ end
 function write_mbe_for_dataset_to_csv(
     geom_file::String,
     csv_outfile::String,
-    ff::AbstractForceField,
-    ff_pol::AbstractForceField
+    ff::CMM.CMM_FF,
+    ff_pol::CMM.CMM_FF
 )
 
     _, labels, geoms = read_xyz(geom_file, static=true)
@@ -340,11 +341,25 @@ end
 function write_csv_with_force_field_energies(
     geom_file::String,
     eda_outfile::String,
-    fragment_indices::Vector{Vector{Int}},
-    ff::AbstractForceField,
-    ff_no_ct::AbstractForceField
+    ff::CMM.CMM_FF,
+    ff_no_ct::CMM.CMM_FF
 )
-    _, labels, geoms = read_xyz(geom_file)
+    _, labels, geoms = CMM.read_xyz(geom_file)
+
+    fragment_patterns = Dict(
+        2 => [[1], [2]],
+        3 => [[1], [2], [3]],
+        4 => [[1,2,3], [4]],
+        5 => [[1,2,3], [4], [5]],
+        6 => [[1,2,3], [4,5,6]],
+        7 => [[1,2,3], [4,5,6], [7]],
+        8 => [[1,2,3], [4,5,6], [7], [8]],
+        9 => [[1,2,3], [4,5,6], [7,8,9]],
+        12 => [[1,2,3], [4,5,6], [7,8,9], [10, 11, 12]],
+        15 => [[1,2,3], [4,5,6], [7,8,9], [10, 11, 12], [13,14,15]],
+    )
+
+    fragment_indices = fragment_patterns[length(labels[1])]
 
     all_exch_data = zeros(length(geoms))
     all_disp_data = zeros(length(geoms))
@@ -353,7 +368,7 @@ function write_csv_with_force_field_energies(
     all_ct_data   = zeros(length(geoms))
 
     @showprogress for i in eachindex(geoms)
-        coords = [MVector{3,Float64}(geoms[i][:, j] / .529177) for j in eachindex(eachcol(geoms[i]))]
+        coords = geoms[i] / .529177
         evaluate!(coords, labels[i], fragment_indices, ff)
         evaluate!(coords, labels[i], fragment_indices, ff_no_ct)
         all_exch_data[i] = ff.results.energies[:Pauli]

@@ -87,6 +87,67 @@ function get_model_inverse_polarizabilities!(
     end
 end
 
+function get_model_inverse_polarizabilities_with_ion_ion_damping!(
+    α_inv::Vector{MMatrix{3, 3, Float64, 9}},
+    labels::AbstractVector{String},
+    ϕ::AbstractVector{Float64},
+    E_field::AbstractVector{MVector{3, Float64}},
+    local_axes::AbstractVector{LocalAxes},
+    params::Dict{Symbol, Float64}
+)    
+    R_field = zeros(3, 3)
+    for i in eachindex(labels)
+        λ_damp = 0.0
+        induced_anisotropy = zeros(3, 3)
+        α_local = get_dipole_polarizability(labels[i], params)
+        if is_ion(labels[i])
+            #α_damp_max_parallel = params[Symbol(labels[i], :_α_damp_max_parallel)]
+            #b_E_field_parallel = params[Symbol(labels[i], :_b_E_field_parallel)]
+            #α_damp_max_perp = params[Symbol(labels[i], :_α_damp_max_perp)]
+            #b_E_field_perp = params[Symbol(labels[i], :_b_E_field_perp)]
+            
+            E_field_mag_sq = E_field[i] ⋅ E_field[i]
+
+            #e_z = normalize(E_field[i])
+            #η = rand(3)
+            #e_x = normalize!(η - η ⋅ e_z * e_z)
+            #e_y = normalize!(cross(e_z, e_x))
+
+            #@views R_field[:, 1] = e_x
+            #@views R_field[:, 2] = e_y
+            #@views R_field[:, 3] = e_z
+
+            # Compute the field-induced anisotropy and then rotate
+            # along the z-axis and then rotate from the field-local
+            # axis frame to the global axis frame.
+            #induced_anisotropy[1, 1] += α_damp_max_perp / (1.0 + exp(-b_E_field_perp * E_field_mag_sq)) - (α_damp_max_perp / 2.0)
+            #induced_anisotropy[2, 2] += α_damp_max_perp / (1.0 + exp(-b_E_field_perp * E_field_mag_sq)) - (α_damp_max_perp / 2.0)
+            #induced_anisotropy[3, 3] += α_damp_max_parallel / (1.0 + exp(-b_E_field_parallel * E_field_mag_sq)) - (α_damp_max_parallel / 2.0)
+            #α_local += R_field * induced_anisotropy * R_field'
+
+            α_free = params[Symbol(labels[i], :_α)]
+            λ_max = params[Symbol(labels[i], :_α_max_damp_factor)]
+            b_ϕ = abs(params[Symbol(labels[i], :_α_damp_exponent)])
+            # NOTE: There may be a better way of dealing with the sign of
+            # the potential? It might just be that we should multiply all
+            # the parameters by q_ion * ϕ. Will have to play around to make
+            # sure this works how I think it will.
+            # Currently, the way this works, we will only damp for attractive
+            # interactions. That is, ϕ_stop and ϕ_max are positive. -q_ion*ϕ_in
+            # is also positive if the energy is attractive. This assumes the
+            # electric potential. It may very well be that we should use the
+            # repulsion potential. In which case, the sign ambiguity goes away
+            # since everything will be positive. The best approach remains to be
+            # seen.
+            #λ_damp = λ_max * (1 - exp(-b_ϕ * (ϕ[i]).^2))
+            λ_damp = λ_max * (1 - exp(-b_ϕ * E_field_mag_sq))
+            α_local -= λ_damp * diagm([α_free, α_free, α_free])
+        end
+        
+        α_inv[i] = inv(local_axes[i].R * α_local * local_axes[i].R')
+    end
+end
+
 function get_quadrupole_polarizabilities!(
     α_quad::AbstractVector{MMatrix{6, 6, Float64, 36}},
     labels::AbstractVector{String},

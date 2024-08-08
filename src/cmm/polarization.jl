@@ -4,8 +4,13 @@ function polarization_energy!(coords::AbstractVector{MVector{3, Float64}}, label
     num_fragments = ff.storage.num_fragments
     natoms = length(labels)
 
-    get_model_inverse_polarizabilities!(
-        ff.storage.α_inv, labels, ff.storage.local_axes, ff.params
+    #get_model_inverse_polarizabilities!(
+    #    ff.storage.α_inv, labels, ff.storage.local_axes, ff.params
+    #)
+
+    get_model_inverse_polarizabilities_with_ion_ion_damping!(
+        ff.storage.α_inv, labels, ff.storage.ϕ_repulsion, ff.storage.E_field_core,
+        ff.storage.local_axes, ff.params
     )
 
     ### Fill quadrupole polarizabilities and rotate to global frame ###
