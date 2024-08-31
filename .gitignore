@@ -1,3 +1,4 @@
 /Manifest.toml
 notebooks/
 src/fit/
+temp*.xyz
