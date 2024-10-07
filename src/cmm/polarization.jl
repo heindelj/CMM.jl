@@ -9,7 +9,7 @@ function polarization_energy!(coords::AbstractVector{MVector{3, Float64}}, label
     #)
 
     get_model_inverse_polarizabilities_with_ion_ion_damping!(
-        ff.storage.α_inv, labels, ff.storage.ϕ_repulsion, ff.storage.E_field_core,
+        ff.storage.α_inv, labels, ff.storage.E_field_core,
         ff.storage.local_axes, ff.params
     )
 
