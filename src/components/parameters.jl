@@ -506,14 +506,6 @@ function get_parameter_dict_with_exch_pol()
         :cos_angle_eq_water => cos(104.4234 * π / 180.0),
         :kbb_water => -61.1423 / 4.184 / 627.51 * 0.529177^2,
         :kba_water => -159.886 / 4.184 / 627.51 * 0.529177,
-        # wB97X-V/def2-qzvppd
-        #:kb_water => 5151.75 / 4.184 / 627.51 * 0.529177^2,
-        #:D_water => 514.7574 / 4.184 / 627.51,
-        #:re_water => 0.959274 / .529177,
-        #:ka_water => 445.9768 / 4.184 / 627.51,
-        #:cos_angle_eq_water => cos(105.0387 * π / 180.0),
-        #:kbb_water => -45.4801 / 4.184 / 627.51 * 0.529177^2,
-        #:kba_water => -153.552 / 4.184 / 627.51 * 0.529177,
         # multipolar repulsion
         :H_b_repulsion   => 1.96474,
         :O_K_repulsion_Q => -1.56567,
@@ -576,13 +568,6 @@ function get_parameter_dict_with_exch_pol()
         :H_αzz        => 0.183855,
         :O_K_exch_pol_μ => 0.0,
         :H_K_exch_pol_μ => 0.0,
-
-        :O_α => 5.0288,
-        :O_α_max_damp_factor => 1.02131,
-        :O_α_damp_exponent   => 25.4152,
-        :Li_q_exch_pol       => -5.93037,
-        :Li_b_exch_pol       => 3.25317,
-
         # Quadrupole polarizability
         :O_α_20_20   => 37.212,
         :O_α_20_22c  => 0.172,
@@ -754,7 +739,7 @@ function get_parameter_dict_with_exch_pol()
         :K_α_damp_exponent  => 0.0,
         :Rb_α_damp_exponent => 0.0,
         :Cs_α_damp_exponent => 0.0,
-        #:Li_q_exch_pol      => -2.20584,
+        :Li_q_exch_pol      => -2.20584,
         :Na_q_exch_pol      => -11.2151,
         :K_q_exch_pol       => -62.6999,
         :Rb_q_exch_pol      => -1426.11,
@@ -791,7 +776,7 @@ function get_parameter_dict_with_exch_pol()
         :CsBr_b_exch_pol    => 6.0044,
         :CsI_b_exch_pol       => 4.88769,
         # additional ion polarizability params
-        #:Li_b_exch_pol => 2.13901,
+        :Li_b_exch_pol => 2.13901,
         :Na_b_exch_pol => 2.92879,
         :K_b_exch_pol  => 4.02308,
         :Rb_b_exch_pol => 6.33357,

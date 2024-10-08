@@ -101,25 +101,13 @@ function get_model_inverse_polarizabilities_with_ion_ion_damping!(
         
         E_field_mag_sq = E_field[i] ⋅ E_field[i]
         
-        # NOTE(JOE): This is what we have been using when writing the
-        # ion-water paper. I'm going to experiment with putting
-        # something similar on water and seeing the effect.
-        #if is_ion(labels[i])
-        #    
-        #    E_field_mag_sq = E_field[i] ⋅ E_field[i]
-        #
-        #    α_free = params[Symbol(labels[i], :_α)]
-        #    λ_max = params[Symbol(labels[i], :_α_max_damp_factor)]
-        #    b_E = abs(params[Symbol(labels[i], :_α_damp_exponent)])
-        #
-        #    λ_damp = λ_max * (1 - exp(-b_E * E_field_mag_sq))
-        #    α_local -= λ_damp * diagm([α_free, α_free, α_free])
-        #end
-
-        if labels[i] != "H"
+        if is_ion(labels[i])
+            E_field_mag_sq = E_field[i] ⋅ E_field[i]
+        
             α_free = params[Symbol(labels[i], :_α)]
             λ_max = params[Symbol(labels[i], :_α_max_damp_factor)]
             b_E = abs(params[Symbol(labels[i], :_α_damp_exponent)])
+        
             λ_damp = λ_max * (1 - exp(-b_E * E_field_mag_sq))
             α_local -= λ_damp * diagm([α_free, α_free, α_free])
         end

@@ -9,69 +9,6 @@ include("utils.jl")
 include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/harmonic_frequencies.jl")
 include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/molecular_axes.jl")
 
-
-function mbe(
-    coords::Vector{MVector{3,Float64}},
-    labels::Vector{String},
-    fragment_indices::Vector{Vector{Int}},
-    ff::AbstractForceField,
-    term::Symbol=:Total,
-    order::Int=5
-)
-    num_fragments = count(>(0), length.(fragment_indices))
-    if order > num_fragments 
-        order = num_fragments
-    end
-
-    energies = zeros(order)
-
-    ff_no_ct = typeof(ff)(copy(ff.terms), copy(ff.params), ff.storage, typeof(ff.results)(copy(ff.results.energies), nothing))
-    if term == :Polarization
-        for i in length(ff_no_ct.terms):-1:1
-            if ff_no_ct.terms[i] == short_range_energy! || ff_no_ct.terms[i] == short_range_energy_and_gradients!
-                popat!(ff_no_ct.terms, i)
-            end
-        end
-    end
-
-    if term == :ChargeTransfer
-        for i in length(ff_no_ct.terms):-1:1
-            if ff_no_ct.terms[i] == short_range_energy! || ff_no_ct.terms[i] == short_range_energy_and_gradients!
-                popat!(ff_no_ct.terms, i)
-            end
-        end
-    end
-
-    for i_mbe in 1:order
-        for fragment_indices_combination in combinations(fragment_indices, i_mbe)
-            flat_indices = reduce(vcat, fragment_indices_combination)
-            @views subsystem_coords = coords[flat_indices]
-            @views subsystem_labels = labels[flat_indices]
-            shifted_indices = [zero(fragment_indices_combination[i]) for i in eachindex(fragment_indices_combination)]
-            index = 1
-            for i_frag in eachindex(shifted_indices)
-                for i in eachindex(shifted_indices[i_frag])
-                    shifted_indices[i_frag][i] = index
-                    index += 1
-                end
-            end
-            if term == :ChargeTransfer
-                evaluate!(subsystem_coords, subsystem_labels, shifted_indices, ff)
-                evaluate!(subsystem_coords, subsystem_labels, shifted_indices, ff_no_ct)
-                energies[i_mbe] += ff.results.energies[:CT_direct] + (ff.results.energies[:Polarization] - ff_no_ct.results.energies[:Polarization])
-            elseif term == :Polarization
-                evaluate!(subsystem_coords, subsystem_labels, shifted_indices, ff_no_ct)
-                energies[i_mbe] += ff_no_ct.results.energies[:Polarization]
-            else
-                evaluate!(subsystem_coords, subsystem_labels, shifted_indices, ff)
-                energies[i_mbe] += ff.results.energies[term]
-            end
-        end
-    end
-
-    return get_mbe_data_from_subsystem_sums(energies, num_fragments)
-end
-
 function write_mbe_for_dataset_to_csv(
     geom_file::String,
     csv_outfile::String,
@@ -161,8 +98,8 @@ function mae_for_dataset(
     geom_file::String,
     eda_file::String,
     fragment_indices::Vector{Vector{Int}},
-    ff::AbstractForceField,
-    ff_no_ct::AbstractForceField,
+    ff::CMM_FF,
+    ff_no_ct::CMM_FF,
 )
     _, labels, geoms = read_xyz(geom_file)
     eda_data = CSV.File(eda_file) |> DataFrame
@@ -199,7 +136,7 @@ function optimize_xyz(
     coords::Vector{MVector{3,Float64}},
     labels::Vector{String},
     fragment_indices::Vector{Vector{Int}},
-    ff::AbstractForceField,
+    ff::CMM_FF,
     iterations::Int=2000,
     f_tol::Float64=1e-8,
     g_tol::Float64=1e-6,
@@ -260,7 +197,7 @@ function optimize_xyz_by_fd(
     coords::Vector{MVector{3,Float64}},
     labels::Vector{String},
     fragment_indices::Vector{Vector{Int}},
-    ff::AbstractForceField,
+    ff::CMM_FF,
     iterations::Int=2000,
     f_tol::Float64=1e-8,
     g_tol::Float64=1e-6,
@@ -315,9 +252,9 @@ function optimize_xyz_by_fd(
     return (Optim.minimum(results) * 627.51, [MVector{3, Float64}(final_geom[:, i]) for i in eachindex(eachcol(final_geom))])
 end
 
-function optimize_all_reference_structures_and_write_to_file(ff::AbstractForceField)
+function optimize_all_reference_structures_and_write_to_file(ff::CMM_FF)
     include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/molecular_axes.jl")
-    _, labels, geoms = read_xyz("assets/water_clusters/all_clusters.xyz")
+    _, labels, geoms = read_xyz("assets/xyz/all_clusters.xyz")
     opt_geoms = Matrix{Float64}[]
     opt_energies = Float64[]
     opt_rmsd = Float64[]
@@ -393,8 +330,8 @@ function get_force_components(
     coords::Vector{MVector{3,Float64}},
     labels::Vector{String},
     fragment_indices::Vector{Vector{Int}},
-    ff::AbstractForceField,
-    ff_no_ct::Union{Nothing, AbstractForceField}
+    ff::CMM_FF,
+    ff_no_ct::Union{Nothing, CMM_FF}
 )
     force_dict = Dict{Symbol, Vector{MVector{3, Float64}}}(
         :Deformation => [@MVector zeros(3) for _ in eachindex(coords)],
@@ -431,7 +368,7 @@ function get_force_components(
     return force_dict
 end
 
-function harmonic_analysis_fqct(coords::Vector{MVector{3, Float64}}, labels::Vector{String}, fragment_indices::Vector{Vector{Int}}, ff::AbstractForceField)
+function harmonic_analysis_fqct(coords::Vector{MVector{3, Float64}}, labels::Vector{String}, fragment_indices::Vector{Vector{Int}}, ff::CMM_FF)
     @assert ff.results.grads === nothing "Haven't implemented version based on gradients yet. Please pass force field with gradients disabled."
     function potential(new_coords::Matrix{Float64})
         @views static_coords = [MVector{3, Float64}(new_coords[:, i]) / 0.529177 for i in eachindex(eachcol(new_coords))]
@@ -487,8 +424,8 @@ end
 function optimize_structures_and_write_bond_length_frequency_correlation(
     outfile::String,
     geom_file::String,
-    ff_energy::AbstractForceField,
-    ff_with_grads::Union{AbstractForceField, Nothing}
+    ff_energy::CMM_FF,
+    ff_with_grads::Union{CMM_FF, Nothing}
 )
     _, labels, geoms = read_xyz(geom_file, static=true)
     opt_geoms = Vector{MVector{3, Float64}}[]
@@ -523,32 +460,6 @@ function optimize_structures_and_write_bond_length_frequency_correlation(
     CSV.write(outfile, df)
     write_xyz(string(splitext(outfile)[1], "_opt_geoms.xyz"), labels, [reduce(hcat, geom * 0.529177) for geom in opt_geoms])
     return
-end
-
-function finite_difference_forces(
-    coords::Vector{MVector{3, Float64}},
-    labels::Vector{String},
-    fragment_indices::Vector{Vector{Int}},
-    ff::AbstractForceField,
-    term::Symbol,
-    step_size = 1e-5
-)
-    grads = [@MVector zeros(3) for _ in eachindex(coords)]
-
-    for i in eachindex(coords)
-        for w in 1:3
-            coords[i][w] += step_size
-            evaluate!(coords, labels, fragment_indices, ff)
-            f_plus_h = ff.results.energies[term]
-
-            coords[i][w] -= 2 * step_size
-            evaluate!(coords, labels, fragment_indices, ff)
-            f_minus_h = ff.results.energies[term]
-            coords[i][w] += step_size
-            grads[i][w] = (f_plus_h - f_minus_h) / (2 * step_size)
-        end
-    end
-    return grads
 end
 
 function mae_over_water_datasets_for_all_terms()
