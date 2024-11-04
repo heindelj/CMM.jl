@@ -108,7 +108,7 @@ function write_mbe_for_dataset_to_csv(
                 append!(mbe_data, all_mbe_terms_and_energies[i][key][end])
             end
         end
-        push!(all_data, mbe_data)
+        push!(all_data, mbe_data * 4.184) # convert to KJ/mol for consistency with Q-Chem
     end
 
     df = DataFrame(mapreduce(permutedims, vcat, all_data), all_keys)
