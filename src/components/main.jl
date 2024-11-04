@@ -6,7 +6,7 @@ include("damped_multipoles.jl")
 include("force_field.jl")
 include("parameters.jl")
 include("utils.jl")
-include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/harmonic_frequencies.jl")
+#include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/harmonic_frequencies.jl")
 include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/molecular_axes.jl")
 
 function write_mbe_for_dataset_to_csv(
@@ -16,8 +16,24 @@ function write_mbe_for_dataset_to_csv(
     ff_pol::CMM.CMM_FF
 )
 
-    _, labels, geoms = read_xyz(geom_file, static=true)
+    _, labels, geoms = CMM.read_xyz(geom_file)
 
+    all_mbe_terms_and_energies = Dict{Symbol, Vector{Float64}}[]
+
+    fragment_patterns = Dict(
+        2 => [[1], [2]],
+        3 => [[1], [2], [3]],
+        4 => [[1,2,3], [4]],
+        5 => [[1,2,3], [4], [5]],
+        6 => [[1,2,3], [4,5,6]],
+        7 => [[1], [2,3,4], [5,6,7]],
+        8 => [[1,2,3], [4,5,6], [7], [8]],
+        9 => [[1,2,3], [4,5,6], [7,8,9]],
+        12 => [[1,2,3], [4,5,6], [7,8,9], [10, 11, 12]],
+        15 => [[1,2,3], [4,5,6], [7,8,9], [10, 11, 12], [13,14,15]],
+    )
+
+    fragment_indices = fragment_patterns[length(labels[1])]
     mbe_terms_and_max_order = Dict(
         :Distortion     => 1,
         :Dispersion     => 2,
@@ -27,24 +43,27 @@ function write_mbe_for_dataset_to_csv(
         :ChargeTransfer => 5,
         :Total          => 5
     )
-
-    all_mbe_terms_and_energies = Dict{Symbol, Vector{Float64}}[]
+    
+    if length(fragment_indices) < 5
+        mbe_terms_and_max_order[:Polarization] = length(fragment_indices)
+        mbe_terms_and_max_order[:ChargeTransfer] = length(fragment_indices)
+        mbe_terms_and_max_order[:Total] = length(fragment_indices)
+    end
 
     for i in eachindex(geoms)
         mbe_terms_and_energies = Dict(
-            :Distortion     => zeros(6),
-            :Dispersion     => zeros(6),
-            :Pauli          => zeros(6),
-            :Electrostatics => zeros(6),
-            :Polarization   => zeros(6),
-            :ChargeTransfer => zeros(6),
-            :Total          => zeros(6)
+            :Distortion     => zeros(mbe_terms_and_max_order[:Distortion] + 1),
+            :Dispersion     => zeros(mbe_terms_and_max_order[:Dispersion] + 1),
+            :Pauli          => zeros(mbe_terms_and_max_order[:Pauli] + 1),
+            :Electrostatics => zeros(mbe_terms_and_max_order[:Electrostatics] + 1),
+            :Polarization   => zeros(mbe_terms_and_max_order[:Polarization] + 1),
+            :ChargeTransfer => zeros(mbe_terms_and_max_order[:ChargeTransfer] + 1),
+            :Total          => zeros(mbe_terms_and_max_order[:Total] + 1)
         )
-        @assert length(labels[i]) % 3 == 0 "This doesn't appear to be a water cluster. Update the code to handle ions!"
         for key in keys(mbe_terms_and_max_order)
-            energies = mbe(geoms[i] / .529177, labels[i], [[j, j+1, j+2] for j in 1:3:length(labels[i])], ff, key, mbe_terms_and_max_order[key])
-            evaluate!(geoms[i] / .529177, labels[i], [[j, j+1, j+2] for j in 1:3:length(labels[i])], ff)
-            evaluate!(geoms[i] / .529177, labels[i], [[j, j+1, j+2] for j in 1:3:length(labels[i])], ff_pol)
+            energies = mbe(geoms[i] / .529177, labels[i], fragment_indices, ff, key, mbe_terms_and_max_order[key])
+            evaluate!(geoms[i] / .529177, labels[i], fragment_indices, ff)
+            evaluate!(geoms[i] / .529177, labels[i], fragment_indices, ff_pol)
             for i_energy in eachindex(energies)
                 mbe_terms_and_energies[key][i_energy] = energies[i_energy]
             end
@@ -63,9 +82,13 @@ function write_mbe_for_dataset_to_csv(
     for key in keys(mbe_terms_and_max_order)
         if mbe_terms_and_max_order[key] > 1
             push!(all_keys, Symbol(key, "2B"))
-            if mbe_terms_and_max_order[key] == 5
+            if mbe_terms_and_max_order[key] >= 3
                 push!(all_keys, Symbol(key, "3B"))
+            end
+            if mbe_terms_and_max_order[key] >= 4
                 push!(all_keys, Symbol(key, "4B"))
+            end
+            if mbe_terms_and_max_order[key] >= 5
                 push!(all_keys, Symbol(key, "5B"))
             end
         end
@@ -79,7 +102,7 @@ function write_mbe_for_dataset_to_csv(
             if mbe_terms_and_max_order[key] == 2
                 append!(mbe_data, all_mbe_terms_and_energies[i][key][2])
                 append!(mbe_data, all_mbe_terms_and_energies[i][key][end])
-            elseif mbe_terms_and_max_order[key] == 5
+            elseif mbe_terms_and_max_order[key] >= 3
                 append!(mbe_data, all_mbe_terms_and_energies[i][key][2:end])
             elseif mbe_terms_and_max_order[key] == 1
                 append!(mbe_data, all_mbe_terms_and_energies[i][key][end])
@@ -98,8 +121,8 @@ function mae_for_dataset(
     geom_file::String,
     eda_file::String,
     fragment_indices::Vector{Vector{Int}},
-    ff::CMM_FF,
-    ff_no_ct::CMM_FF,
+    ff::CMM.CMM_FF,
+    ff_no_ct::CMM.CMM_FF,
 )
     _, labels, geoms = read_xyz(geom_file)
     eda_data = CSV.File(eda_file) |> DataFrame
@@ -136,7 +159,7 @@ function optimize_xyz(
     coords::Vector{MVector{3,Float64}},
     labels::Vector{String},
     fragment_indices::Vector{Vector{Int}},
-    ff::CMM_FF,
+    ff::CMM.CMM_FF,
     iterations::Int=2000,
     f_tol::Float64=1e-8,
     g_tol::Float64=1e-6,
@@ -197,7 +220,7 @@ function optimize_xyz_by_fd(
     coords::Vector{MVector{3,Float64}},
     labels::Vector{String},
     fragment_indices::Vector{Vector{Int}},
-    ff::CMM_FF,
+    ff::CMM.CMM_FF,
     iterations::Int=2000,
     f_tol::Float64=1e-8,
     g_tol::Float64=1e-6,
@@ -252,7 +275,7 @@ function optimize_xyz_by_fd(
     return (Optim.minimum(results) * 627.51, [MVector{3, Float64}(final_geom[:, i]) for i in eachindex(eachcol(final_geom))])
 end
 
-function optimize_all_reference_structures_and_write_to_file(ff::CMM_FF)
+function optimize_all_reference_structures_and_write_to_file(ff::CMM.CMM_FF)
     include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/molecular_axes.jl")
     _, labels, geoms = read_xyz("assets/xyz/all_clusters.xyz")
     opt_geoms = Matrix{Float64}[]
@@ -289,7 +312,7 @@ function write_csv_with_force_field_energies(
         4 => [[1,2,3], [4]],
         5 => [[1,2,3], [4], [5]],
         6 => [[1,2,3], [4,5,6]],
-        7 => [[1,2,3], [4,5,6], [7]],
+        7 => [[1], [2,3,4], [5,6,7]],
         8 => [[1,2,3], [4,5,6], [7], [8]],
         9 => [[1,2,3], [4,5,6], [7,8,9]],
         12 => [[1,2,3], [4,5,6], [7,8,9], [10, 11, 12]],
@@ -330,8 +353,8 @@ function get_force_components(
     coords::Vector{MVector{3,Float64}},
     labels::Vector{String},
     fragment_indices::Vector{Vector{Int}},
-    ff::CMM_FF,
-    ff_no_ct::Union{Nothing, CMM_FF}
+    ff::CMM.CMM_FF,
+    ff_no_ct::Union{Nothing, CMM.CMM_FF}
 )
     force_dict = Dict{Symbol, Vector{MVector{3, Float64}}}(
         :Deformation => [@MVector zeros(3) for _ in eachindex(coords)],
@@ -368,7 +391,7 @@ function get_force_components(
     return force_dict
 end
 
-function harmonic_analysis_fqct(coords::Vector{MVector{3, Float64}}, labels::Vector{String}, fragment_indices::Vector{Vector{Int}}, ff::CMM_FF)
+function harmonic_analysis_fqct(coords::Vector{MVector{3, Float64}}, labels::Vector{String}, fragment_indices::Vector{Vector{Int}}, ff::CMM.CMM_FF)
     @assert ff.results.grads === nothing "Haven't implemented version based on gradients yet. Please pass force field with gradients disabled."
     function potential(new_coords::Matrix{Float64})
         @views static_coords = [MVector{3, Float64}(new_coords[:, i]) / 0.529177 for i in eachindex(eachcol(new_coords))]
@@ -424,8 +447,8 @@ end
 function optimize_structures_and_write_bond_length_frequency_correlation(
     outfile::String,
     geom_file::String,
-    ff_energy::CMM_FF,
-    ff_with_grads::Union{CMM_FF, Nothing}
+    ff_energy::CMM.CMM_FF,
+    ff_with_grads::Union{CMM.CMM_FF, Nothing}
 )
     _, labels, geoms = read_xyz(geom_file, static=true)
     opt_geoms = Vector{MVector{3, Float64}}[]
