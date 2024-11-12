@@ -28,7 +28,6 @@ function update_model_multipoles_and_local_axes!(
             get_bisector_rotation_matrix_and_local_axis_system!(coords, i_O, i_H1, i_H2, local_axes[i_O])
             multipoles[i_O].Z = params[:O_Z]
             multipoles[i_O].q_shell = charges[i_O] - params[:O_Z]
-
             @views multipoles[i_O].μ[:] = local_axes[i_O].R * get_local_frame_dipoles(labels[i_O], params)
             @views multipoles[i_O].Q[:, :] = local_axes[i_O].R * get_local_frame_quadrupoles(labels[i_O], params) * local_axes[i_O].R'
             

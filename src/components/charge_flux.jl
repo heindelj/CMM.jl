@@ -259,7 +259,6 @@ function get_geometry_dependent_atomic_hardness!(
             r_OH1_length = norm(r_OH1)
             r_OH2_length = norm(r_OH2)
             θ = acos(r_OH1 ⋅ r_OH2 / (r_OH1_length * r_OH2_length))
-
             η_fq[i_H1] *= ((r_OH_eq / r_OH1_length)^k_OH_η) * ((r_OH_eq / r_OH2_length)^k_OH_bb_η)
             η_fq[i_H2] *= ((r_OH_eq / r_OH2_length)^k_OH_η) * ((r_OH_eq / r_OH1_length)^k_OH_bb_η)
             η_fq[i_H1] += k_OH_θ_η * (θ - θ_HOH_eq)
