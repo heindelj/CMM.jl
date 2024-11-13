@@ -1,12 +1,14 @@
 using Optim, Combinatorics, CSV, DataFrames, StatsBase, ProgressMeter, Printf, StaticArrays, CMM
 
+import CMM.read_xyz, CMM.write_xyz
+
 include("damping.jl")
 include("multipoles.jl")
 include("damped_multipoles.jl")
 include("force_field.jl")
 include("parameters.jl")
 include("utils.jl")
-#include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/harmonic_frequencies.jl")
+include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/harmonic_frequencies.jl")
 include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/molecular_axes.jl")
 
 function write_mbe_for_dataset_to_csv(
@@ -216,78 +218,19 @@ function optimize_xyz(
     return (Optim.minimum(results) * 627.51, [MVector{3, Float64}(final_geom[:, i]) for i in eachindex(eachcol(final_geom))])
 end
 
-function optimize_xyz_by_fd(
-    coords::Vector{MVector{3,Float64}},
-    labels::Vector{String},
-    fragment_indices::Vector{Vector{Int}},
-    ff::CMM.CMM_FF,
-    iterations::Int=2000,
-    f_tol::Float64=1e-8,
-    g_tol::Float64=1e-6,
-    x_tol::Float64=1e-4,
-    show_trace::Bool=true,
-    show_every::Int=5,
-    warn_about_units::Bool=true
-)
-    for i in eachindex(coords)
-        for j in eachindex(coords)
-            if warn_about_units
-                if i != j && (norm(coords[i] - coords[j]) < 1.0)
-                    @warn "Found short intermatomic distance of less than 1.0.
-                    Did you pass the coordinates in angstrom instead of bohr?"
-                    warn_about_units = false
-                    break
-                end
-            end
-        end
-    end
-
-    function fg!(F, G, x)
-        coords = [MVector{3,Float64}(x[:, i]) for i in eachindex(eachcol(x))]
-        energy = 0.0
-        if G !== nothing
-            fd_grads = finite_difference_forces(coords, labels, fragment_indices, ff, :Total) / 627.51
-            for i in eachindex(fd_grads)
-                @views G[(3*i-2):3*i] = fd_grads[i]
-            end
-        end
-        if F !== nothing
-            if energy != 0.0
-                return energy
-            end
-            evaluate!(coords, labels, fragment_indices, ff)
-            return ff.results.energies[:Total] / 627.51
-        end
-    end
-
-    results = optimize(
-        Optim.only_fg!(fg!),
-        reduce(hcat, coords),
-        LBFGS(linesearch=Optim.LineSearches.HagerZhang()),
-        Optim.Options(
-            f_tol=f_tol,
-            g_tol=g_tol,
-            x_tol=x_tol,
-            show_trace=show_trace,
-            show_every=show_every,
-            iterations=iterations))
-    final_geom = Optim.minimizer(results)
-    return (Optim.minimum(results) * 627.51, [MVector{3, Float64}(final_geom[:, i]) for i in eachindex(eachcol(final_geom))])
-end
-
 function optimize_all_reference_structures_and_write_to_file(ff::CMM.CMM_FF)
     include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/molecular_axes.jl")
-    _, labels, geoms = read_xyz("assets/xyz/all_clusters.xyz")
+    _, labels, geoms = CMM.read_xyz("assets/xyz/all_clusters.xyz")
     opt_geoms = Matrix{Float64}[]
     opt_energies = Float64[]
     opt_rmsd = Float64[]
     for i in eachindex(geoms)
-        geom = [MVector{3, Float64}(geoms[i][:, j] / .529177) for j in eachindex(labels[i])]
+        geom = geoms[i] / 0.529177
         fragment_indices = [[i,i+1,i+2] for i in 1:3:length(geom)]
-        opt_energy, opt_coords = optimize_xyz_by_fd(geom, labels[i], fragment_indices, ff)
+        opt_energy, opt_coords = CMM.optimize_xyz_by_fd(geom, labels[i], fragment_indices, ff)
         push!(opt_geoms, reduce(hcat, opt_coords * .529177))
         push!(opt_energies, opt_energy)
-        push!(opt_rmsd, kabsch_rmsd(geoms[i], reduce(hcat, opt_coords * .529177)))
+        push!(opt_rmsd, kabsch_rmsd(reduce(hcat, geoms[i]), reduce(hcat, opt_coords * .529177)))
         display(opt_rmsd[end])
         display(opt_energy)
     end
@@ -392,7 +335,7 @@ function get_force_components(
 end
 
 function harmonic_analysis_fqct(coords::Vector{MVector{3, Float64}}, labels::Vector{String}, fragment_indices::Vector{Vector{Int}}, ff::CMM.CMM_FF)
-    @assert ff.results.grads === nothing "Haven't implemented version based on gradients yet. Please pass force field with gradients disabled."
+    #@assert ff.results.grads === nothing "Haven't implemented version based on gradients yet. Please pass force field with gradients disabled."
     function potential(new_coords::Matrix{Float64})
         @views static_coords = [MVector{3, Float64}(new_coords[:, i]) / 0.529177 for i in eachindex(eachcol(new_coords))]
         evaluate!(static_coords, labels, fragment_indices, ff)
@@ -836,16 +779,15 @@ function get_mbe_terms_for_table_in_paper(cluster_file::String)
 end
 
 function ion_water_optimization_and_harmonic_frequencies()
-    ff = build_fqct_aniso_model(false)
+    ff = build_cmm_model(false)
     ions = ["f", "cl", "br", "i", "li", "na", "k", "rb", "cs"]
     all_freqs = zeros(length(ions), 6)
     all_binding_energies = zeros(length(ions))
     for (i, ion) in enumerate(ions)
         _, h2o_ion_labels_scan, h2o_ion_geoms_scan = read_xyz(
-            string("/home/heindelj/dev/julia_development/reactive_force_fields/notebooks/data/scans/", "h2o_", ion, "_scan.xyz"),
-            static=true
+            string("/home/heindelj/dev/julia_development/reactive_force_fields/notebooks/data/scans/", "h2o_", ion, "_scan.xyz"), static=true
         )
-        ion_water_de, opt_ion_geom = optimize_xyz_by_fd(
+        ion_water_de, opt_ion_geom = CMM.optimize_xyz_by_fd(
             h2o_ion_geoms_scan[7] / .529177, h2o_ion_labels_scan[7], [[1,2,3], [4]], ff
         )
         evals, _, _ = harmonic_analysis_fqct(opt_ion_geom, h2o_ion_labels_scan[1], [[1,2,3], [4]], ff)

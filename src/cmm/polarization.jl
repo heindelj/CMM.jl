@@ -115,18 +115,6 @@ function polarization_energy!(coords::AbstractVector{MVector{3, Float64}}, label
             SlaterPolarizationDamping()
         )
 
-        # Include direct or semi-direct quadrupole polarization if requested.
-        # Direct quadrupole polarization means to include just the quad. pol.
-        # due to permanent field gradients. Semi-direct means to include the
-        # permanent field gradients + the field gradients due to induced charges
-        # and dipoles. I haven't seen this described in the literature but my
-        # guess is that it should be a better estimate of the full induced
-        # quadrupole polarization energy than the direct version. This remains
-        # to be tested though. -Joe 6/27/24
-        include_quadrupole_polarization = true # Will become build option
-        if include_quadrupole_polarization
-            
-        end
     else
         # TODO: This is just unreachable code right now. Will eventually switch to
         # iterative solution (probably above a certain system size). 6/27/24
