@@ -214,11 +214,7 @@ function multipolar_exchange_polarization!(
         for j_frag in (i_frag+1):length(fragment_indices)
             for i in fragment_indices[i_frag]
                 q_i = exch_pol_charges[i]
-                if labels[i] == "H" || labels[i] == "O" || labels[i] == "Ca" || labels[i] == "Mg"
-                    b_i = abs(params[Symbol(labels[i], :_b_exch_pol)])
-                else
-                    b_i = abs(params[Symbol(labels[i], :_b_repulsion)])
-                end
+                b_i = abs(params[Symbol(labels[i], :_b_exch_pol)])
                 #K_i_μ = params[Symbol(labels[i], :_K_exch_pol_μ)]
                 #K_i_Q = params[Symbol(labels[i], :_K_exch_pol_Q)]
 
@@ -228,11 +224,7 @@ function multipolar_exchange_polarization!(
                 #end
                 for j in fragment_indices[j_frag]
                     q_j = exch_pol_charges[j]
-                    if labels[j] == "H" || labels[j] == "O" || labels[j] == "Ca" || labels[j] == "Mg"
-                        b_j = abs(params[Symbol(labels[j], :_b_exch_pol)])
-                    else
-                        b_j = abs(params[Symbol(labels[j], :_b_repulsion)])
-                    end
+                    b_j = abs(params[Symbol(labels[j], :_b_exch_pol)])
                     #K_j_μ = params[Symbol(labels[j], :_K_exch_pol_μ)]
                     #K_j_Q = params[Symbol(labels[j], :_K_exch_pol_Q)]
 

@@ -623,14 +623,14 @@ function get_parameter_dict_with_exch_pol()
         :Rb_K_repulsion_Q => 0.0,
         :Cs_K_repulsion_Q => 0.0,
 
-        :F_b_repulsion  => 1.70455, #:F_b_repulsion  => 1.90554,
-        :Cl_b_repulsion => 1.44034, #:Cl_b_repulsion => 1.60669,
-        :Br_b_repulsion => 1.38615, #:Br_b_repulsion => 1.4814,
-        :I_b_repulsion  => 1.35105, #:I_b_repulsion  => 1.38744,
-        :F_q_repulsion  => 3.70003, #:F_q_repulsion  => 4.73173,
-        :Cl_q_repulsion => 5.78587, #:Cl_q_repulsion => 8.40926,
-        :Br_q_repulsion => 7.16563, #:Br_q_repulsion => 9.09265,
-        :I_q_repulsion  => 10.7126, #:I_q_repulsion  => 11.883,
+        :F_b_repulsion  => 1.70352,
+        :Cl_b_repulsion => 1.4384,
+        :Br_b_repulsion => 1.38496,
+        :I_b_repulsion  => 1.35031,
+        :F_q_repulsion  => 3.70166,
+        :Cl_q_repulsion => 5.80737,
+        :Br_q_repulsion => 7.17975,
+        :I_q_repulsion  => 10.7103,
 
         # These are zero because there are no multipoles for a spherical ion
         :F_K_repulsion_μ    => 0.0,
