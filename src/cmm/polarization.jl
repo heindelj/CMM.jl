@@ -226,7 +226,6 @@ function polarization_energy!(coords::AbstractVector{MVector{3, Float64}}, label
     bond_pol_energy = (one_body_energy_with_response - one_body_energy)
     ff.results.energies[:bond_pol_induced] = bond_pol_energy
     polarization_energy += bond_pol_energy
-    
     # NOTE: When charge transfer is included in the polarization calculation
     # then the polarization energy here includes part of the CT energy.
     # The two can only be separated by doing a calculation without CT

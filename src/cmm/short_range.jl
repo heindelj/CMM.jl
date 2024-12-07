@@ -72,6 +72,8 @@ function short_range_energy!(coords::AbstractVector{MVector{3, Float64}}, labels
     # TODO: This can be stored ahead of time ^^^
     update_repulsion_charges_with_charge_flux!(coords, labels, fragment_indices, repulsion_charges, ff.params, nothing)
 
+    display(repulsion_charges)
+
     multipolar_pauli_repulsion!(
         coords, labels, fragment_indices, ff.params,
         ff.storage.multipoles,

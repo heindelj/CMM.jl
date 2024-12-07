@@ -165,7 +165,7 @@ function get_field_dependent_morse_and_bend_energy_and_grads!(
 
             r_e_OH1 = r_e + Δr_e_OH1
             r_e_OH2 = r_e + Δr_e_OH2
-
+            
             k_b_OH1 = k_b - shift_OH1 + ct_slope_2 * Δq_ct[i_H1]^2
             k_b_OH2 = k_b - shift_OH2 + ct_slope_2 * Δq_ct[i_H2]^2
 
