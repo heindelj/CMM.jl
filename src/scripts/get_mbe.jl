@@ -11,18 +11,6 @@ function write_mbe_for_dataset_to_csv(
 
     all_mbe_terms_and_energies = Dict{Symbol, Vector{Float64}}[]
 
-    fragment_patterns = Dict(
-        2 => [[1], [2]],
-        3 => [[1], [2], [3]],
-        4 => [[1,2,3], [4]],
-        5 => [[1,2,3], [4], [5]],
-        6 => [[1,2,3], [4,5,6]],
-        7 => [[1], [2,3,4], [5,6,7]],
-        8 => [[1,2,3], [4,5,6], [7], [8]],
-        9 => [[1,2,3], [4,5,6], [7,8,9]],
-        12 => [[1,2,3], [4,5,6], [7,8,9], [10, 11, 12]],
-        15 => [[1,2,3], [4,5,6], [7,8,9], [10, 11, 12], [13,14,15]],
-    )
     function fragment_builder(labels::Vector{String})
         fragment_indices = Vector{Int}[]
         for i in eachindex(labels)
@@ -36,7 +24,6 @@ function write_mbe_for_dataset_to_csv(
         return fragment_indices
     end
 
-    #fragment_indices = fragment_patterns[length(labels[1])]
     fragment_indices = fragment_builder(labels[1])
     mbe_terms_and_max_order = Dict(
         :Distortion     => 1,
