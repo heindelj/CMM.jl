@@ -23,7 +23,7 @@ function write_mbe_for_dataset_to_csv(
         12 => [[1,2,3], [4,5,6], [7,8,9], [10, 11, 12]],
         15 => [[1,2,3], [4,5,6], [7,8,9], [10, 11, 12], [13,14,15]],
     )
-    function fragment_builder(labels::Vector{Vector{String}})
+    function fragment_builder(labels::Vector{String})
         fragment_indices = Vector{Int}[]
         for i in eachindex(labels)
             if labels[i] == "O"
@@ -124,7 +124,7 @@ end
 function main(xyz_file::String)
     _, labels, geoms = CMM.read_xyz(xyz_file)
     ff = build_cmm_model(false, custom_params=CMM.get_parameter_dict_with_exch_pol_from_original_submission())
-    ff_pol = build_cmm_model_POL(false, custom_params=CMM.get_parameter_dict_with_exch_pol_from_original_submission())
+    ff_pol = build_cmm_model_POL(custom_params=CMM.get_parameter_dict_with_exch_pol_from_original_submission())
 
     csv_file = string(splitext(xyz_file)[1], ".csv")
     write_mbe_for_dataset_to_csv(xyz_file, csv_file, ff, ff_pol)
