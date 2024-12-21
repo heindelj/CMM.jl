@@ -3,7 +3,7 @@ function build_cmm_model(
     include_gradients::Bool=false,
     include_exch_pol::Bool=true,
     include_charge_transfer::Bool=true,
-    custom_terms::Union{Vector{Function}, Nothing}=nothing,
+    custom_terms::Union{Vector{Function}, Nothing}=nothing;
     custom_params::Union{Dict{Symbol, Float64}, Nothing}=nothing
 )
     natoms = 0
