@@ -1,4 +1,4 @@
-using Optim, Combinatorics, CSV, DataFrames, StatsBase, ProgressMeter, Printf, StaticArrays, CMM
+using Optim, Combinatorics, CSV, DataFrames, ProgressMeter, StaticArrays, CMM
 
 function write_mbe_for_dataset_to_csv(
     geom_file::String,
@@ -54,7 +54,7 @@ function write_mbe_for_dataset_to_csv(
         mbe_terms_and_max_order[:Total] = length(fragment_indices)
     end
 
-    for i in eachindex(geoms)
+    @showprogress for i in eachindex(geoms)
         mbe_terms_and_energies = Dict(
             :Distortion     => zeros(mbe_terms_and_max_order[:Distortion] + 1),
             :Dispersion     => zeros(mbe_terms_and_max_order[:Dispersion] + 1),
