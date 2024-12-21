@@ -96,23 +96,25 @@ function build_cmm_model(
     return CMM_FF(ff_terms, params, ff_storage, ff_results)
 end
 
-function build_cmm_model_POL()
+function build_cmm_model_POL(; custom_params::Union{Dict{Symbol, Float64}, Nothing}=nothing)
     return build_cmm_model(
         false, true, false,
         [
             reset_storage!, get_one_body_properties!,
             permanent_electrostatics!, short_range_energy!,
             polarization_energy!
-        ]
+        ],
+        custom_params=custom_params
     )
 end
 
-function build_cmm_model_FRZ()
+function build_cmm_model_FRZ(; custom_params::Union{Dict{Symbol, Float64}, Nothing}=nothing)
     return build_cmm_model(
         false, true, false,
         [
             reset_storage!, get_one_body_properties!,
             permanent_electrostatics!, short_range_energy!
-        ]
+        ],
+        custom_params=custom_params
     )
 end
