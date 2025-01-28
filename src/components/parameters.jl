@@ -606,10 +606,10 @@ function get_parameter_dict_with_exch_pol()
         :Rb_q_repulsion => 19.0684,
         :Cs_q_repulsion => 20.9948,
         
-        :Mg_q_repulsion => 4.25833,
-        :Ca_b_repulsion => 2.21834,
-        :Ca_q_repulsion => 8.06718,
         :Mg_b_repulsion => 2.66576,
+        :Ca_b_repulsion => 2.21834,
+        :Mg_q_repulsion => 4.25833,
+        :Ca_q_repulsion => 8.06718,
         
         # These are zero because there are no multipoles for a spherical ion
         :Li_K_repulsion_μ => 0.0,
@@ -773,10 +773,10 @@ function get_parameter_dict_with_exch_pol()
         :Mg_K_exch_pol_μ => 0.0,
         :Ca_K_exch_pol_μ => 0.0,
 
-        :F_b_exch_pol  => 1.90554, # Same as repulsion exponent
-        :Cl_b_exch_pol => 1.60669, # Same as repulsion exponent
-        :Br_b_exch_pol => 1.4814, # Same as repulsion exponent
-        :I_b_exch_pol  => 1.38744, # Same as repulsion exponent
+        :F_b_exch_pol  => 1.90554,
+        :Cl_b_exch_pol => 1.60669,
+        :Br_b_exch_pol => 1.4814,
+        :I_b_exch_pol  => 1.38744,
         :F_q_exch_pol  => -0.107239,
         :Cl_q_exch_pol => -0.622035,
         :Br_q_exch_pol => -0.708194,
@@ -837,10 +837,10 @@ function get_parameter_dict_with_exch_pol()
         :Ca_b_ct          => 1.6,
         :Ca_η_fq          => 0.0,
         :Mg_η_fq          => 0.0,
-        :Mg_q_ct_donor    => -0.499793,
         :Mg_q_ct_acceptor => 3.5885,
-        :Ca_q_ct_donor    => 0.655079,
         :Ca_q_ct_acceptor => 7.30099,
+        :Mg_q_ct_donor    => -0.499793,
+        :Ca_q_ct_donor    => 0.655079,
         :OMg_γ_ct_slater  => 0.638288,
         :OCa_γ_ct_slater  => 2.4784,
 
