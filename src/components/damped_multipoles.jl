@@ -499,7 +499,7 @@ function get_all_induced_electrostatic_quantities!(
                     r_ij_vec = coords[j] - coords[i]
                     r_ij = norm(r_ij_vec)
                     b_ij = sqrt(b_i * b_j)
-                    u_overlap = b_ij * r_ij #get_u(r_ij, labels[i], labels[j], params, overlap_damping_type)
+                    u_overlap = b_ij * r_ij
                     λ1_overlap = get_λ1(u_overlap, a, overlap_damping_type)
                     λ3_overlap = get_λ3(u_overlap, a, overlap_damping_type)
                     λ5_overlap = get_λ5(u_overlap, a, overlap_damping_type)

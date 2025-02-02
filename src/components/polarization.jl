@@ -29,7 +29,7 @@ function add_dipole_dipole_interactions_to_polarization_tensor!(
                     for j in fragment_indices[j_frag]
                         is_ion_j = is_ion(labels[j])
                         b_j = abs(params[Symbol(labels[j], :_b_elec)])
-                        if i != j && ((is_ion_i | is_ion_j) == false)
+                        if i != j
                             r_vec = coords[j] - coords[i]
                             r_ij = norm(r_vec)
                             b_ij = sqrt(b_i * b_j)
@@ -87,7 +87,7 @@ function add_charge_dipole_interactions_to_polarization_tensor!(
                     for j in fragment_indices[j_frag]
                         is_ion_j = is_ion(labels[j])
                         b_j = abs(params[Symbol(labels[j], :_b_elec)])
-                        if i != j && ((is_ion_i | is_ion_j) == false)
+                        if i != j
                             r_vec = coords[j] - coords[i]
                             r_ij = norm(r_vec)
                             b_ij = sqrt(b_i * b_j)
