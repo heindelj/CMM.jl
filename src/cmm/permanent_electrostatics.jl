@@ -16,7 +16,7 @@ function permanent_electrostatics!(coords::AbstractVector{MVector{3, Float64}}, 
         ff.storage.E_field_gradients_shell,
         ff.storage.E_field_gradient_gradients_core,
         ff.storage.E_field_gradient_gradients_shell,
-        ff.params,        
+        ff.params,
         ff.storage.shell_damping_type,
         ff.storage.overlap_damping_type
     )

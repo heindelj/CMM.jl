@@ -453,8 +453,9 @@ function get_bisector_rotation_matrix_and_local_axis_system!(coords::AbstractVec
     η = coords[i_x] - coords[i_center]
     u = norm(η) * ξ + norm(ξ) * η
     v = η
-
+    
     e_z = normalize(u)
+    display(e_z)
     vez = sum(v .* e_z)
     e_x = normalize!(v - vez * e_z)
     e_y = normalize!(cross(e_z, e_x))
