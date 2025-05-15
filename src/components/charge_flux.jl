@@ -198,3 +198,30 @@ function get_geometry_dependent_atomic_hardness!(
         end
     end
 end
+
+function get_atomic_hardness!(
+    labels::AbstractVector{String},
+    fragment_indices::AbstractVector{Vector{Int}},
+    η_fq::AbstractVector{Float64},
+    params::Dict{Symbol,Float64}
+)
+    for i_frag in eachindex(fragment_indices)
+        if length(fragment_indices[i_frag]) == 3
+            @assert labels[fragment_indices[i_frag]] == ["O", "H", "H"] "Water atoms are in the wrong order! Must be OHH."
+            i_O = fragment_indices[i_frag][1]
+            i_H1 = fragment_indices[i_frag][2]
+            i_H2 = fragment_indices[i_frag][3]
+
+            η_fq[i_O] = abs(params[Symbol(labels[i_O], :_η_fq)])
+            η_fq[i_H1] = abs(params[Symbol(labels[i_H1], :_η_fq)])
+            η_fq[i_H2] = abs(params[Symbol(labels[i_H2], :_η_fq)])
+        elseif length(fragment_indices[i_frag]) != 1
+            n = length(fragment_indices[i_frag])
+            @warn "Got fragment with $n atoms. This is not water or an ion. Either the implementation needs to be updated or the provided input is wrong."
+        else
+            # If we are here, this is an ion so there is only one index for the fragment.
+            i_X = fragment_indices[i_frag][1]
+            η_fq[i_X] = abs(params[Symbol(labels[i_X], :_η_fq)])
+        end
+    end
+end

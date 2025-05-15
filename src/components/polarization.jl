@@ -25,11 +25,16 @@ function add_dipole_dipole_interactions_to_polarization_tensor!(
             is_ion_i = is_ion(labels[i])
             b_i = abs(params[Symbol(labels[i], :_b_elec)])
             for j_frag in eachindex(fragment_indices)
-                if i_frag < j_frag
+                if i_frag <= j_frag
                     for j in fragment_indices[j_frag]
                         is_ion_j = is_ion(labels[j])
                         b_j = abs(params[Symbol(labels[j], :_b_elec)])
                         if i != j
+                            if i_frag == j_frag
+                                if labels[i] == "O" && labels[j] == "O"
+                                    continue
+                                end
+                            end
                             r_vec = coords[j] - coords[i]
                             r_ij = norm(r_vec)
                             b_ij = sqrt(b_i * b_j)
@@ -83,11 +88,16 @@ function add_charge_dipole_interactions_to_polarization_tensor!(
             is_ion_i = is_ion(labels[i])
             b_i = abs(params[Symbol(labels[i], :_b_elec)])
             for j_frag in eachindex(fragment_indices)
-                if i_frag < j_frag
+                if i_frag <= j_frag
                     for j in fragment_indices[j_frag]
                         is_ion_j = is_ion(labels[j])
                         b_j = abs(params[Symbol(labels[j], :_b_elec)])
                         if i != j
+                            if i_frag == j_frag
+                                if labels[i] == "O" && labels[j] == "O"
+                                    continue
+                                end
+                            end
                             r_vec = coords[j] - coords[i]
                             r_ij = norm(r_vec)
                             b_ij = sqrt(b_i * b_j)
@@ -150,10 +160,15 @@ function add_charge_charge_interactions_to_polarization_matrix!(
             T[i, num_polarizable_sites+i_frag] = 1.0
             b_i = abs(params[Symbol(labels[i], :_b_elec)])
             for j_frag in eachindex(fragment_indices)
-                if i_frag < j_frag
+                if i_frag <= j_frag
                     for j in fragment_indices[j_frag]
                         b_j = abs(params[Symbol(labels[j], :_b_elec)])
                         if i != j
+                            if i_frag == j_frag
+                                if labels[i] == "O" && labels[j] == "O"
+                                    continue
+                                end
+                            end
                             r_ij = norm(coords[j] - coords[i])
                             b_ij = sqrt(b_i * b_j)
                             br = b_ij * r_ij
