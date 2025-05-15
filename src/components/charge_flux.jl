@@ -47,7 +47,7 @@ function get_charges_with_charge_flux!(
                 j_OH * (r_OH2_length - r_OH_eq) +
                 j_OH_bb * (r_OH1_length - r_OH_eq)
             )
-            dq_O  = -(dq_H1 + dq_H2)
+            dq_O  = -(dq_H1 + dq_H2) 
 
             charges[i_O]  = params[:q_O] + dq_O
             charges[i_H1] = -0.5 * params[:q_O] + dq_H1
