@@ -24,7 +24,7 @@ function get_total_dipole_moment(coords::Vector{MVector{3, Float64}}, multipoles
     return μ
 end
 
-function get_total_dipole_moment(coords::Vector{MVector{3, Float64}}, multipoles::Vector{CSMultipole1})
+function get_total_dipole_moment(coords::Vector{MVector{3, Float64}}, multipoles::Vector{CMM.CSMultipole1})
     @assert length(coords) == length(multipoles) "Coordinates and multipoles aren't the same length! Is there supposed to be virtual site data in the coordinates?"
     μ = @MVector zeros(3)
     for i in eachindex(coords)
@@ -34,7 +34,7 @@ function get_total_dipole_moment(coords::Vector{MVector{3, Float64}}, multipoles
     return μ
 end
 
-function get_total_dipole_moment(coords::Vector{MVector{3, Float64}}, multipoles::Vector{CSMultipole2})
+function get_total_dipole_moment(coords::Vector{MVector{3, Float64}}, multipoles::Vector{CMM.CSMultipole2})
     @assert length(coords) == length(multipoles) "Coordinates and multipoles aren't the same length! Is there supposed to be virtual site data in the coordinates?"
 
     μ = @MVector zeros(3)
@@ -45,7 +45,7 @@ function get_total_dipole_moment(coords::Vector{MVector{3, Float64}}, multipoles
     return μ
 end
 
-function get_total_dipole_moment(coords::Vector{MVector{3, Float64}}, multipoles::Vector{CSMultipole2}, induced_multipoles::Vector{CSMultipole1})
+function get_total_dipole_moment(coords::Vector{MVector{3, Float64}}, multipoles::Vector{CMM.CSMultipole2}, induced_multipoles::Vector{CMM.CSMultipole1})
     @assert length(coords) == length(multipoles) "Coordinates and multipoles aren't the same length! Is there supposed to be virtual site data in the coordinates?"
     μ = @MVector zeros(3)
     for i in eachindex(coords)
@@ -65,7 +65,7 @@ function get_total_induced_dipole_moment(coords::Vector{MVector{3, Float64}}, la
     return μ
 end
 
-function get_total_induced_dipole_moment(coords::Vector{MVector{3, Float64}}, labels::Vector{String}, induced_multipoles::Vector{CSMultipole1}) 
+function get_total_induced_dipole_moment(coords::Vector{MVector{3, Float64}}, labels::Vector{String}, induced_multipoles::Vector{CMM.CSMultipole1}) 
     μ = @MVector zeros(3)
     for i in eachindex(coords)
         μ += (induced_multipoles[i].q_shell + induced_multipoles[i].Z) * coords[i]
