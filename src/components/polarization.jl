@@ -29,9 +29,10 @@ function add_dipole_dipole_interactions_to_polarization_tensor!(
                     for j in fragment_indices[j_frag]
                         is_ion_j = is_ion(labels[j])
                         b_j = abs(params[Symbol(labels[j], :_b_elec)])
-                        if i != j
+                        if i < j
                             if i_frag == j_frag
-                                if labels[i] == "O" && labels[j] == "O"
+                                if labels[i] == "H" && labels[j] == "H"
+                                else
                                     continue
                                 end
                             end
@@ -92,9 +93,10 @@ function add_charge_dipole_interactions_to_polarization_tensor!(
                     for j in fragment_indices[j_frag]
                         is_ion_j = is_ion(labels[j])
                         b_j = abs(params[Symbol(labels[j], :_b_elec)])
-                        if i != j
+                        if i < j
                             if i_frag == j_frag
-                                if labels[i] == "O" && labels[j] == "O"
+                                if labels[i] == "H" && labels[j] == "H"
+                                else
                                     continue
                                 end
                             end
@@ -163,9 +165,10 @@ function add_charge_charge_interactions_to_polarization_matrix!(
                 if i_frag <= j_frag
                     for j in fragment_indices[j_frag]
                         b_j = abs(params[Symbol(labels[j], :_b_elec)])
-                        if i != j
+                        if i < j
                             if i_frag == j_frag
-                                if labels[i] == "O" && labels[j] == "O"
+                                if labels[i] == "H" && labels[j] == "H"
+                                else
                                     continue
                                 end
                             end

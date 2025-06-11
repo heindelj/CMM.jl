@@ -1,4 +1,4 @@
-using CSV, DataFrames, StatsBase
+using CSV, DataFrames, StatsBase, Printf, CMM, ProgressMeter
 include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/harmonic_frequencies.jl")
 include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/molecular_axes.jl")
 
@@ -403,9 +403,9 @@ function ion_water_dimer_polarizability_comparison()
     end
 end
 
-function optimize_all_reference_structures_and_write_to_file(ff::AbstractForceField)
+function optimize_all_reference_structures_and_write_to_file(ff::CMM.CMM_FF)
     include("/home/heindelj/dev/julia_development/wally/src/molecule_tools/molecular_axes.jl")
-    _, labels, geoms = read_xyz("assets/water_clusters/all_clusters.xyz")
+    _, labels, geoms = read_xyz("assets/xyz/all_clusters.xyz")
     opt_geoms = Matrix{Float64}[]
     opt_energies = Float64[]
     opt_rmsd = Float64[]
@@ -430,8 +430,8 @@ function write_csv_with_force_field_energies(
     geom_file::String,
     eda_outfile::String,
     fragment_indices::Vector{Vector{Int}},
-    ff::AbstractForceField,
-    ff_no_ct::AbstractForceField
+    ff::CMM.CMM_FF,
+    ff_no_ct::CMM.CMM_FF
 )
     _, labels, geoms = read_xyz(geom_file)
 
@@ -467,8 +467,8 @@ function get_force_components(
     coords::Vector{MVector{3,Float64}},
     labels::Vector{String},
     fragment_indices::Vector{Vector{Int}},
-    ff::AbstractForceField,
-    ff_no_ct::Union{Nothing, AbstractForceField}
+    ff::CMM.CMM_FF,
+    ff_no_ct::Union{Nothing, CMM.CMM_FF}
 )
     force_dict = Dict{Symbol, Vector{MVector{3, Float64}}}(
         :Deformation => [@MVector zeros(3) for _ in eachindex(coords)],
@@ -505,8 +505,8 @@ function get_force_components(
     return force_dict
 end
 
-function harmonic_analysis_fqct(coords::Vector{MVector{3, Float64}}, labels::Vector{String}, fragment_indices::Vector{Vector{Int}}, ff::AbstractForceField)
-    @assert ff.results.grads === nothing "Haven't implemented version based on gradients yet. Please pass force field with gradients disabled."
+function harmonic_analysis_fqct(coords::Vector{MVector{3,Float64}}, labels::Vector{String}, fragment_indices::Vector{Vector{Int}}, ff::CMM.CMM_FF)
+    #@assert ff.results.grads === nothing "Haven't implemented version based on gradients yet. Please pass force field with gradients disabled."
     function potential(new_coords::Matrix{Float64})
         @views static_coords = [MVector{3, Float64}(new_coords[:, i]) / 0.529177 for i in eachindex(eachcol(new_coords))]
         evaluate!(static_coords, labels, fragment_indices, ff)
@@ -561,8 +561,8 @@ end
 function optimize_structures_and_write_bond_length_frequency_correlation(
     outfile::String,
     geom_file::String,
-    ff_energy::AbstractForceField,
-    ff_with_grads::Union{AbstractForceField, Nothing}
+    ff_energy::CMM.CMM_FF,
+    ff_with_grads::Union{CMM.CMM_FF, Nothing}
 )
     _, labels, geoms = read_xyz(geom_file, static=true)
     opt_geoms = Vector{MVector{3, Float64}}[]
@@ -602,8 +602,8 @@ end
 function write_mbe_for_dataset_to_csv(
     geom_file::String,
     csv_outfile::String,
-    ff::AbstractForceField,
-    ff_pol::AbstractForceField
+    ff::CMM.CMM_FF,
+    ff_pol::CMM.CMM_FF
 )
 
     _, labels, geoms = read_xyz(geom_file, static=true)
@@ -688,8 +688,8 @@ function mae_for_dataset(
     geom_file::String,
     eda_file::String,
     fragment_indices::Vector{Vector{Int}},
-    ff::AbstractForceField,
-    ff_no_ct::AbstractForceField,
+    ff::CMM.CMM_FF,
+    ff_no_ct::CMM.CMM_FF,
 )
     _, labels, geoms = read_xyz(geom_file)
     eda_data = CSV.File(eda_file) |> DataFrame
